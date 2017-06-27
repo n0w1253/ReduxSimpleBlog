@@ -8,7 +8,11 @@ import _ from 'lodash'
 const FIELDS = {
     title: {
         type: 'input',
-        label: 'Title for Post'
+        label: 'Title for Post',
+        validate: (val)=>{
+            return val ? val.length > 3: true
+        },
+        errMsg: "Length must be greater than 3"
     },
     categories: {
         type: 'input',
@@ -52,7 +56,8 @@ class PostsNew extends Component {
     }
 
     renderReduxField(fieldConfig, field) {
-       // console.log("fieldConfig is "+fieldConfig);
+      //  console.log("fieldConfig is "+JSON.stringify(fieldConfig));
+      //  console.log("field is "+field);
         return (
             <Field
                 key={fieldConfig.label}
@@ -86,7 +91,10 @@ function validate(values) {
     _.each(FIELDS, (type, field) => {
        // console.log(type+"  "+field)
         if (!values[field]) {
-            errors[field] = `Enter a ${field}`;
+            errors[field] = `Enter a ${field} `;
+        }
+        if (type.validate && !type.validate(values[field])) {
+            errors[field] = type.errMsg
         }
     });
 
