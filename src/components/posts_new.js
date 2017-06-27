@@ -4,6 +4,21 @@ import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { createPost } from '../actions'
 
+const FIELDS = {
+    title: {
+        type: 'input',
+        label: 'Title for Post'
+    },
+    categories: {
+        type: 'input',
+        label: 'Enter some categories for this post'
+    },
+    content: {
+        type: 'textarea',
+        label: 'Post Contents'
+    }
+};
+
 class PostsNew extends Component {
 
     renderField(field) {  //field : a single piece of state
@@ -14,7 +29,7 @@ class PostsNew extends Component {
         return (
             <div className={className}>
                 <label>{field.label}</label>
-                <input
+                <field.type
                     className="form-control"
                     type="text"
                     {...field.input}
@@ -35,26 +50,26 @@ class PostsNew extends Component {
         })
     }
 
+    renderReduxField(fieldConfig, field) {
+       // console.log("fieldConfig is "+fieldConfig);
+        return (
+            <Field
+                key={fieldConfig.label}
+                label={fieldConfig.label}  //any prop will be attached to "field"
+                name={field}    //piece of state, must be identical to the prop name in the errors object (validate function)
+                type={fieldConfig.type}
+                component={ this.renderField }
+            />
+        )
+
+    }
     render() {
         const { handleSubmit } = this.props
 
         return (
             <form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
-                <Field
-                    label="Title"   //any prop will be attached to "field"
-                    name="title"    //piece of state, must be identical to the prop name in the errors object (validate function)
-                    component={ this.renderField }
-                />
-                <Field
-                    label="Categories"
-                    name="categories"    //piece of state
-                    component={ this.renderField }
-                />
-                <Field
-                    label="Post Content"
-                    name="content"    //piece of state
-                    component={ this.renderField }
-                />
+                {_.map(FIELDS, this.renderReduxField.bind(this))}
+
                 <button type="submit" className="btn btn-primary">Submit</button>
                 <Link to="/" className="btn btn-danger">Cancel</Link>
             </form>
@@ -67,17 +82,12 @@ function validate(values) {
     const errors = {}
 
     // validate the inputs form 'values'
-    if (!values.title) {
-        errors.title = "Enter a title that is at least 3 characters!"
-    }
-
-    if (!values.categories) {
-        errors.categories = "Enter some categories!"
-    }
-
-    if (!values.content) {
-        errors.content = "Enter some categories!"
-    }
+    _.each(FIELDS, (type, field) => {
+       // console.log(type+"  "+field)
+        if (!values[field]) {
+            errors[field] = `Enter a ${field}`;
+        }
+    });
 
 
     // if errors is empty, the form is fine to submit
